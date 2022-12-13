@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.Rproj.user/
+.Rhistory
 
 # C extensions
 *.so
@@ -127,3 +129,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.Rproj.user
