@@ -6,15 +6,27 @@ library(MSstatsTMT)
 library(plyr)
 library(stringr)
 
-### all the paths
-out_dir_path<-"C:/Users/anh.h.nguyen/Documents/nucleosome/raw/rts/grouping1_firstAttempt/out"
-search_path <- "C:/Users/anh.h.nguyen/Documents/nucleosome/raw/rts/grouping1_firstAttempt/merged.tsv"
+### all the 
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)==0) {
+  stop("Specify which experiment to plot and output directory", call.=FALSE)
+} else if (length(args)==1) {
+  stop("2 arguments required. Specify which experiment to plot and output directory", call.=FALSE)
+}
+
+experiments_typs <- c(
+  
+)
+
+
+out_dir_path<-args[2]
 impurity_path <- "data/WB314414_2.csv"
-inten_path  <- "C:/Users/anh.h.nguyen/Documents/nucleosome/raw/rts/grouping1_firstAttempt/intensity.txt"
-noise_path <- "C:/Users/anh.h.nguyen/Documents/nucleosome/raw/rts/grouping1_firstAttempt/noise.txt"
-gene_path <- "C:/Users/anh.h.nguyen/Documents/nucleosome/raw/gene_list_proteome.tsv"
-percolator_path <- "C:/Users/anh.h.nguyen/Documents/nucleosome/raw/rts/grouping1_firstAttempt/percolator.target.psms.txt"
-annot_path <- file.path("C:/Users/anh.h.nguyen/Documents/nucleosome/raw/rts/grouping1_firstAttempt", "annotations.csv")
+search_path <- "data/grouping1_firstAttempt/merged.tsv"
+inten_path  <- "data/grouping1_firstAttempt/intensity.txt"
+noise_path <- "data/grouping1_firstAttempt/noise.txt"
+gene_path <- "data/gene_list_proteome.tsv"
+percolator_path <- "data/grouping1_firstAttempt/percolator.target.psms.txt"
+annot_path <-"data/grouping1_firstAttempt/annotations.csv"
 
 ### all df
 impurities_df<- read.csv(impurity_path)

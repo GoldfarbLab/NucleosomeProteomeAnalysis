@@ -1,0 +1,16 @@
+Run,Fraction,Mixture,TechRepMixture,Channel,Condition,BioReplicate
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.2,E61A,1_E61A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.3,E61A,2_E61A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.4,E61A,3_E61A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.5,E64A,1_E64A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.6,E64A,2_E64A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.7,E64A,3_E64A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.8,E56A,1_E56A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.9,E56A,2_E56A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.10,E56A,3_E56A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.11,D90A,1_D90A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.12,D90A,2_D90A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.13,D90A,3_D90A
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.14,WT,1_WT
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.15,WT,2_WT
+MC035_HEK293T_Nucleosomes_TMTpro_Grouping2_walk,1,1,1,channel.16,WT,3_WT
