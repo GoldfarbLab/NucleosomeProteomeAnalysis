@@ -1,0 +1,16 @@
+Run,Fraction,Mixture,TechRepMixture,Channel,Condition,BioReplicate
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.2,E113A,1_E113A
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.3,E113A,2_E113A
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.4,E113A,3_E113A
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.5,E113Q,1_E113Q
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.6,E113Q,2_E113Q
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.7,E113Q,3_E113Q
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.8,E56A,1_E56A
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.9,E56A,2_E56A
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.10,E56A,3_E56A
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.11,E56Q,1_E56Q
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.12,E56Q,2_E56Q
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.13,E56Q,3_E56Q
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.14,WT,1_WT
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.15,WT,2_WT
+MC034_HEK293T_Nucleosomes_TMTpro_Grouping2_V1,1,1,1,channel.16,WT,3_WT
