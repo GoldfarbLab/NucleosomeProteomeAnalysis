@@ -1,4 +1,4 @@
-library(tidyverse)
+library(dplyr)
 library(TMTPurityCorrection)
 library(MSstatsHelper)
 library(MSstatsTMT)
@@ -23,7 +23,6 @@ experiment_types <- c(
 
 out_dir_path<-args[2]
 input_dir_path <- experiment_types[args[1]]
-input_dir_path <- experiment_types["v1"]
 impurity_path <- file.path("data","WB314414_2.csv")
 search_path <- file.path(input_dir_path, "merged.tsv")
 inten_path  <- file.path(input_dir_path, "intensity.txt")
@@ -33,16 +32,16 @@ percolator_path <- file.path(input_dir_path, "percolator.target.psms.txt")
 annot_path <-file.path(input_dir_path, "annotations.csv")
 
 ### all df
-impurities_df<- read.csv(impurity_path)
+impurities_df<- read.csv(impurity_path, fileEncoding="UTF-8")
 intensities_df <- read_tsv(inten_path) 
 noise_df <- read_tsv(noise_path) 
 geneName_df <- read_tsv(gene_path)
 geneName_df <- geneName_df %>% dplyr::rename(ProteinName = Entry, GeneName = `Gene names`)
 search_df <- read_tsv(search_path)
 
-
-if ("NAME" %in% names(search_df)){
-  names(search_df)[1] <- "Raw file"
+merged <- ("NAME" == substr(colnames(search_df)[1], 1,4))
+if (merged){
+  colnames(search_df)[1] <- "Raw file"
 }
 search_df <- search_df %>% dplyr::rename(`Scan number`=`Scan Number`)
 if ("Raw file" %in% names(search_df)){
@@ -56,7 +55,7 @@ annot_df <- read.csv(annot_path, header = TRUE)
 
 ### filter round 1: no CON, no REV, signal to noise >= 50, has bridge
 
-if ("NAME" %in% names(search_df)){
+if (merged){
   filtered_df <- corrected_df %>% 
     filter(across(everything(), ~ !grepl("CON_", .))) %>% 
     filter(across(everything(), ~ !grepl("REV_", .))) %>% 
@@ -85,7 +84,7 @@ percolator_filtered$Peptide <- gsub("\\[[^)]*]", "", percolator_filtered$Peptide
 
 ### filter round 2: tryptic sequence reformat
 filtered_df_rd2 <- transform(filtered_df, Peptide=str_sub(Peptide,3,-3))
-if ("NAME" %in% names(search_df)){
+if (merged){
   runs <- unique(filtered_df_rd2[["Raw.file"]])     #run1 = 1, run2=3, run3= 0, run4=2
   idex <- as.double(c(1,3,0,2))
   
@@ -95,10 +94,15 @@ if ("NAME" %in% names(search_df)){
 filtered_df_rd2 <- mutate(filtered_df_rd2, Raw.file = as.numeric(Raw.file))
 filtered_df_rd2$Peptide <- gsub("\\[[^)]*]", "", filtered_df_rd2$Peptide)
 
-if ("NAME" %in% names(search_df)){
-  filtered_df_final <- merge(filtered_df_rd2, percolator_filtered, by=c("Scan.number", "Peptide", "Charge.State","Raw.file"))
+if (merged){
+  filtered_df_final <- filtered_df_rd2 %>% 
+    inner_join(percolator_filtered, by=c("Scan.number" = "Scan.number",
+                                         "Peptide" = "Peptide", "Charge.State"="Charge.State",
+                                         "Raw.file"="Raw.file"))
 } else {
-  filtered_df_final <- merge(filtered_df_rd2, percolator_filtered, by=c("Scan.number", "Peptide", "Charge.State"))
+  filtered_df_final <- filtered_df_rd2 %>% 
+    inner_join(percolator_filtered, by=c("Scan.number" = "Scan.number",
+                                         "Peptide" = "Peptide", "Charge.State"="Charge.State"))
 }#sometimes need to add Raw.file here
 filtered_df_final$Peptide <- gsub("\\[[^)]*]", "", filtered_df_final$Peptide)
 
@@ -122,26 +126,50 @@ filtered_df_final$ProteinName <- lapply(filtered_df_final[,'Protein.ID'], get_ac
 filtered_df_final_expanded <- filtered_df_final %>% 
   tidyr::separate_rows(ProteinName, sep=';')
 filtered_df_final_expanded <- merge(filtered_df_final_expanded, geneName_df, by = "ProteinName", all.x=T)
-filtered_df_final_expanded <- filtered_df_final_expanded %>% 
-  dplyr::group_by(ProteinName) %>% 
-  dplyr:: mutate(unique.peptide.per.protein = n_distinct(Peptide),
-                 peptide.per.protein =n(),
-                 PSM = paste(Peptide, Charge.State, Scan.number,Raw.file, sep="_"),
-                 psm.per.protein = n_distinct(PSM)
-                 )
+if(merged){
+  filtered_df_final_expanded <- filtered_df_final_expanded %>% 
+    dplyr::group_by(ProteinName) %>% 
+    dplyr:: mutate(unique.peptide.per.protein = n_distinct(Peptide),
+                   peptide.per.protein =n(),
+                   PSM = paste(Peptide, Charge.State, Scan.number,Raw.file, sep="_"),
+                   psm.per.protein = n_distinct(PSM)
+                   )
+  filtered_df_final_expanded <- filtered_df_final_expanded %>% 
+    dplyr::group_by(Scan.number, Peptide, Charge.State, Raw.file) %>% 
+    dplyr::mutate(ProteinName = paste(ProteinName, collapse = ";"),
+                  GeneName = paste(GeneName, collapse = ";"),
+                  unique.peptide.per.protein = paste(unique.peptide.per.protein, collapse= ";"),
+                  peptide.per.protein = paste(peptide.per.protein, collapse= ";"),
+                  psm.per.protein = paste(psm.per.protein, collapse= ";"))
+  filtered_df_final_expanded <- filtered_df_final_expanded %>% 
+    dplyr::group_by(GeneName) %>% 
+    dplyr::mutate(number.of.scans = n_distinct(Scan.number, Raw.file), 
+                  number.of.unique.peptides = n_distinct(Peptide))
+} else {
+  filtered_df_final_expanded <- filtered_df_final_expanded %>% 
+    dplyr::group_by(ProteinName) %>% 
+    dplyr:: mutate(unique.peptide.per.protein = n_distinct(Peptide),
+                   peptide.per.protein =n(),
+                   PSM = paste(Peptide, Charge.State, Scan.number, sep="_"),
+                   psm.per.protein = n_distinct(PSM)
+    )
+  filtered_df_final_expanded <- filtered_df_final_expanded %>% 
+    dplyr::group_by(Scan.number, Peptide, Charge.State) %>% 
+    dplyr::mutate(ProteinName = paste(ProteinName, collapse = ";"),
+                  GeneName = paste(GeneName, collapse = ";"),
+                  unique.peptide.per.protein = paste(unique.peptide.per.protein, collapse= ";"),
+                  peptide.per.protein = paste(peptide.per.protein, collapse= ";"),
+                  psm.per.protein = paste(psm.per.protein, collapse= ";"))
+  filtered_df_final_expanded <- filtered_df_final_expanded %>% 
+    dplyr::group_by(GeneName) %>% 
+    dplyr::mutate(number.of.scans = n_distinct(Scan.number), 
+                  number.of.unique.peptides = n_distinct(Peptide))
+  
+}
 
-filtered_df_final_expanded <- filtered_df_final_expanded %>% 
-  dplyr::group_by(Scan.number, Peptide, Charge.State, Raw.file) %>% 
-  dplyr::mutate(ProteinName = paste(ProteinName, collapse = ";"),
-                GeneName = paste(GeneName, collapse = ";"),
-                unique.peptide.per.protein = paste(unique.peptide.per.protein, collapse= ";"),
-                peptide.per.protein = paste(peptide.per.protein, collapse= ";"),
-                psm.per.protein = paste(psm.per.protein, collapse= ";"))
 
-filtered_df_final_expanded <- filtered_df_final_expanded %>% 
-  dplyr::group_by(GeneName) %>% 
-  dplyr::mutate(number.of.scans = n_distinct(Scan.number, Raw.file), 
-                number.of.unique.peptides = n_distinct(Peptide))
+
+
 
 
 # filtered_df_final<- merge(filtered_df_final, filtered_df_final_expanded, by=c('Scan.number', 'Peptide', 'Charge.State', 'Raw.file'), all.x=T)
@@ -150,7 +178,7 @@ filtered_df_final_expanded <- filtered_df_final_expanded %>%
 #   dplyr::rename(ProteinName=ProteinName.x)
 
 #psms msstats
-if ("NAME" %in% names(search_df)){
+if (merged){
   annot.maxquant <- annot_df %>% filter(grepl('Bridge', BioReplicate) ) %>% 
     mutate(BioReplicate= str_c(Mixture, '_', 'Norm' ) ) %>% 
     full_join(annot_df) %>% 
@@ -166,13 +194,13 @@ if ("NAME" %in% names(search_df)){
   
 }
 
-if ("NAME" %in% names(search_df)){
+if (merged){
   msstats_tmt_df <- filtered_df_final_expanded %>%
     select( ProteinName, Peptide, Charge.State, matches("Reporter.intensity.corrected"), 
             GeneName, Scan.number, Raw.file, 
             PSM, unique.peptide.per.protein, peptide.per.protein,
             psm.per.protein, number.of.scans, number.of.unique.peptides, `percolator q-value`) %>% #sometimes we need to add raw.file
-    pivot_longer(cols=matches("Reporter.intensity.corrected"), names_to='Channel', values_to='Intensity') %>%
+    tidyr::pivot_longer(cols=matches("Reporter.intensity.corrected"), names_to='Channel', values_to='Intensity') %>%
     mutate(Channel = str_replace(Channel,"Reporter.intensity.corrected.", "channel.")) %>%
     dplyr::rename(PeptideSequence = Peptide, Charge=Charge.State, Run = Raw.file) %>% #SOmetimes we have raw file here
     merge(annot.maxquant, by = c('Channel', "Run"))  %>%  #sometimes we need run here 
@@ -195,17 +223,14 @@ if ("NAME" %in% names(search_df)){
             GeneName, Scan.number, 
             PSM, unique.peptide.per.protein, peptide.per.protein,
             psm.per.protein, number.of.scans, number.of.unique.peptides, `percolator q-value`) %>% #sometimes we need to add raw.file
-    pivot_longer(cols=matches("Reporter.intensity.corrected"), names_to='Channel', values_to='Intensity') %>%
+    tidyr::pivot_longer(cols=matches("Reporter.intensity.corrected"), names_to='Channel', values_to='Intensity') %>%
     mutate(Channel = str_replace(Channel,"Reporter.intensity.corrected.", "channel.")) %>%
+    dplyr::rename(PeptideSequence = Peptide, Charge=Charge.State) %>%
+    merge(annot.maxquant, by = c('Channel'))  %>%  #sometimes we need run here
     dplyr::group_by(ProteinName) %>%
-    dplyr::mutate(psm_1 = data.table::uniqueN(PSM[Mixture == 1]),psm_2 = data.table::uniqueN(PSM[Mixture == 2]),
-                  psm_3 = data.table::uniqueN(PSM[Mixture == 3]),psm_4 = data.table::uniqueN(PSM[Mixture == 4]),
-                  pep_1 = data.table::uniqueN(PeptideSequence[Mixture == 1]),pep_2 = data.table::uniqueN(PeptideSequence[Mixture == 2]),
-                  pep_3 = data.table::uniqueN(PeptideSequence[Mixture == 3]),pep_4 = data.table::uniqueN(PeptideSequence[Mixture == 4])) %>% 
-    dplyr::mutate(psm.per.mixture = paste(psm_1,psm_2,psm_3,psm_4, sep = ";"),
-                  peptides.per.mixture = paste(pep_1,pep_2,pep_3,pep_4,sep = ";")) %>% 
-    dplyr::mutate(`percolator q-value` = round(`percolator q-value`, 5)) %>% 
-    select(-psm_1,-psm_2,-psm_3,-psm_4,-pep_1,-pep_2,-pep_3, -pep_4)
+    dplyr::mutate(psm.per.mixture = data.table::uniqueN(PSM),
+                  peptides.per.mixture = data.table::uniqueN(PeptideSequence) ) %>% 
+    dplyr::mutate(`percolator q-value` = round(`percolator q-value`, 5))
 }
 
 msstats_tmt_df2 <- msstats_tmt_df %>% 
@@ -248,7 +273,7 @@ raw_noise_corrected_excel <- msstats_tmt_df2 %>%
   dplyr::group_by(GeneName, ProteinName, BioReplicate, Mixture) %>%
   dplyr::mutate(total = sum(Intensity)) %>%
   dplyr::select(-Intensity) %>%
-  pivot_wider(names_from=c("BioReplicate", "Mixture"), values_from="total", names_sep="_", names_sort = T, values_fn = unique) %>%
+  tidyr::pivot_wider(names_from=c("BioReplicate", "Mixture"), values_from="total", names_sep="_", names_sort = T, values_fn = unique) %>%
   dplyr::select(c(meta$Class,"ProteinName","GeneName",
                   unique.peptide.per.protein, peptide.per.protein,
                   psm.per.protein, number.of.scans, number.of.unique.peptides,

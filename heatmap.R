@@ -8,7 +8,12 @@ library(cluster)
 library(RColorBrewer)
 library(ggpubr)
 
-path<-"C:/Users/anh.h.nguyen/Documents/nucleosome/raw/rts/grouping1_firstAttempt/out"
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)==0) {
+  stop("Specify output directory", call.=FALSE)
+} 
+
+path<-args[1]
 mstats_quant <- readRDS(file.path(path, 'step3_protein_abundance_woHist.rds'))
 geneOfInterest <- unlist(lapply(c("ACTL6A", "ACTR6", "ANAPC1", "ANAPC2", "anapc4", 
                                   "anapc5", "bard1", "baz1b", "cdc16","cdc23", "cdc27", "dek", 
