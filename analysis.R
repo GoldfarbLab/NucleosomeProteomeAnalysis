@@ -113,31 +113,31 @@ prot.mstats_gene <- proteinSummarization(fn_genes,
                                          reference_norm=T, remove_norm_channel=T,
                                          MBimpute = T, verbose = TRUE)
 
-#prot.mstats$temp2$GeneName <- lapply(unlist(prot.mstats$temp2[,'Protein']), get_genes)
-#saveRDS(prot.mstats_gene, file = file.path(path,'step3_protein_abundance_woHist.rds'))
+prot.mstats$temp2$GeneName <- lapply(unlist(prot.mstats$temp2[,'Protein']), get_genes)
+saveRDS(prot.mstats_gene, file = file.path(path,'step3_protein_abundance_woHist.rds'))
 
 
 
 # profile plot ------------------------------------------------------------
-# prot.mstats_gene2 <- prot.mstats_gene
-# prot.mstats_gene2$FeatureLevelData <- prot.mstats_gene2$FeatureLevelData %>%
-#   mutate(Run = paste("Mixture" ,Mixture, sep = " " ))
-# prot.mstats_gene2$ProteinLevelData <- prot.mstats_gene2$ProteinLevelData %>%
-#   mutate(Run = paste("Mixture" ,Mixture, sep = " " ))
-# 
-# .plotProfileTMT2 <- MSstatsTMT:::.plotProfileTMT
-# dataProcessPlotsTMT2 <- MSstatsTMT::dataProcessPlotsTMT
-# prot.mstats_gene3 <- prot.mstats_gene2
-# 
-# 
-# prot.mstats_gene3$FeatureLevelData <- prot.mstats_gene3$FeatureLevelData %>% 
-#   filter(ProteinName == "KDM2A")
-# prot.mstats_gene3$ProteinLevelData <- prot.mstats_gene3$ProteinLevelData %>% 
-#   filter(Protein == "KDM2A")
-#   
-# 
-# dataProcessPlotsTMT2(prot.mstats_gene3,type= "ProfilePlot",
-#                      address=path, legend.size=10, width = 21, height =7)
+prot.mstats_gene2 <- prot.mstats_gene
+prot.mstats_gene2$FeatureLevelData <- prot.mstats_gene2$FeatureLevelData %>%
+  mutate(Run = paste("Mixture" ,Mixture, sep = " " ))
+prot.mstats_gene2$ProteinLevelData <- prot.mstats_gene2$ProteinLevelData %>%
+  mutate(Run = paste("Mixture" ,Mixture, sep = " " ))
+
+.plotProfileTMT2 <- MSstatsTMT:::.plotProfileTMT
+dataProcessPlotsTMT2 <- MSstatsTMT::dataProcessPlotsTMT
+prot.mstats_gene3 <- prot.mstats_gene2
+
+
+prot.mstats_gene3$FeatureLevelData <- prot.mstats_gene3$FeatureLevelData %>%
+  filter(ProteinName == "KDM2A")
+prot.mstats_gene3$ProteinLevelData <- prot.mstats_gene3$ProteinLevelData %>%
+  filter(Protein == "KDM2A")
+
+
+dataProcessPlotsTMT2(prot.mstats_gene3,type= "ProfilePlot",
+                     address=path, legend.size=10, width = 21, height =7)
 
 
 

@@ -10,9 +10,18 @@ library(ggpubr)
 
 args = commandArgs(trailingOnly=TRUE)
 if (length(args)==0) {
-  stop("Specify output directory", call.=FALSE)
-} 
+  stop("Specify which experiment to plot and output directory", call.=FALSE)
+} else if (length(args)==1) {
+  stop("2 arguments required. Specify which experiment to plot and output directory", call.=FALSE)
+}
 
+experiment_types <- c(
+  "grouping_all" = file.path("data", "grouping1_firstAttempt"),
+  "v1" = file.path("data", "v1"),
+  "walk" = file.path("data", "walk"),
+  "ap" = file.path("data", "ap")
+)
+#experiment <- args[1]
 path<-args[1]
 mstats_quant <- readRDS(file.path(path, 'step3_protein_abundance_woHist.rds'))
 geneOfInterest <- unlist(lapply(c("ACTL6A", "ACTR6", "ANAPC1", "ANAPC2", "anapc4", 
@@ -33,23 +42,26 @@ prot.mstats <- prot.mstats %>%
   filter(present_mixture >= 2)
 
 # log2 intensities -----------------------------------------------------------
-prot.mstats.fc <- matrix(,nrow=dim(prot.mstats)[1],ncol=0)
-wt_list <- list()
-inten.order <- c()
-for (mix in 1:4){
-  wt <- paste('channel.', 14:(14+2), '_', mix, sep='')
-  wt_med <- rowMedians(base::as.matrix(prot.mstats[, wt]), na.rm = T)
-  wt_list[[mix]] <- wt_med
-  #for (sample in seq(2,13,3)){
-  for (sample in sequence(4,2,3)){
-    inten.order <- append(inten.order, c(paste('channel.', sample:(sample+2), '_', mix, sep='')))
-    grouping <- c(paste('channel.', sample:(sample+2), '_', mix, sep=''))
-    for (i in 1:3){
-      prot.mstats.fc<-cbind(prot.mstats.fc, wt_med)
+if (experiment == "grouping_all"){
+  prot.mstats.fc <- matrix(,nrow=dim(prot.mstats)[1],ncol=0)
+  wt_list <- list()
+  inten.order <- c()
+  for (mix in 1:4){
+    wt <- paste('channel.', 14:(14+2), '_', mix, sep='')
+    wt_med <- rowMedians(base::as.matrix(prot.mstats[, wt]), na.rm = T)
+    wt_list[[mix]] <- wt_med
+    #for (sample in seq(2,13,3)){
+    for (sample in sequence(4,2,3)){
+      inten.order <- append(inten.order, c(paste('channel.', sample:(sample+2), '_', mix, sep='')))
+      grouping <- c(paste('channel.', sample:(sample+2), '_', mix, sep=''))
+      for (i in 1:3){
+        prot.mstats.fc<-cbind(prot.mstats.fc, wt_med)
+      }
     }
   }
+} else if(experiment == ""){
+  
 }
-
 #prot.mstats.fc <- matrix(,nrow=dim(prot.mstats)[1],ncol=0)
 # 61A 2_2, 90A 5_3, 92A 2_4, 64A 5_2, 56A 8_1, 113A 8_4	
 # inten.order <- c("channel.2_2","channel.3_2","channel.4_2",
@@ -84,16 +96,16 @@ for (mix in 1:4){
 # prot.mstats.fc <- cbind(prot.mstats.fc, wt_list[[4]],wt_list[[4]],wt_list[[4]],
 #                         wt_list[[1]],wt_list[[1]],wt_list[[1]],
 #                         wt_list[[4]],wt_list[[4]],wt_list[[4]])
-# 61A 2_2, 90A 5_3, 92A 2_4, 92K		5_4
-# 56A 8_1, 56Q 11_1, 113A 8_4, 113Q		11_4
-# inten.order <- c("channel.2_2","channel.3_2","channel.4_2",
-#                  "channel.5_3","channel.6_3","channel.7_3",
-#                  "channel.2_4","channel.3_4","channel.4_4",
-#                  "channel.5_4","channel.6_4","channel.7_4")
-# prot.mstats.fc <- cbind(prot.mstats.fc, wt_list[[2]],wt_list[[2]],wt_list[[2]],
-#                         wt_list[[3]],wt_list[[3]],wt_list[[3]],
-#                         wt_list[[4]],wt_list[[4]],wt_list[[4]],
-#                         wt_list[[4]],wt_list[[4]],wt_list[[4]])
+  # 61A 2_2, 90A 5_3, 92A 2_4, 92K		5_4
+  # 56A 8_1, 56Q 11_1, 113A 8_4, 113Q		11_4
+  # inten.order <- c("channel.2_2","channel.3_2","channel.4_2",
+  #                  "channel.5_3","channel.6_3","channel.7_3",
+  #                  "channel.2_4","channel.3_4","channel.4_4",
+  #                  "channel.5_4","channel.6_4","channel.7_4")
+  # prot.mstats.fc <- cbind(prot.mstats.fc, wt_list[[2]],wt_list[[2]],wt_list[[2]],
+  #                         wt_list[[3]],wt_list[[3]],wt_list[[3]],
+  #                         wt_list[[4]],wt_list[[4]],wt_list[[4]],
+  #                         wt_list[[4]],wt_list[[4]],wt_list[[4]])
 # inten.order <- c("channel.8_1","channel.9_1","channel.10_1",
 #                  "channel.11_1","channel.12_1","channel.13_1",
 #                  "channel.8_4","channel.9_4","channel.10_4",

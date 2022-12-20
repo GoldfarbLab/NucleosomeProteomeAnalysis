@@ -75,7 +75,10 @@ norm_xcel2 <- norm_xcel2 %>%
 write.csv(norm_xcel2, file.path(path,"xcel_step2_normalized_msstats.csv"), row.names = F, quote = F, na= "")
 
 #use gene
-fn_genes <- fn_without_hist %>% dplyr::rename(Protein=ProteinName)  %>% dplyr::rename(ProteinName=GeneName) 
+fn_genes <- fn_without_hist %>% 
+  select(ProteinName, PeptideSequence, Charge, PSM,
+         Mixture, TechRepMixture, Run, Channel, Condition,
+         BioReplicate, Intensity)
 
 prot.mstats_gene <- proteinSummarization(fn_genes,
                                          method="msstats",
