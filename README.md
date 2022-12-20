@@ -1,6 +1,6 @@
 # NucleosomeProteomeAnalysis
 
-##To install dependencies, run `installation.R` in RStudio
+## To install dependencies, run `installation.R` in RStudio
 
 ## Step 1: run `preproccess.R` with 
 ```
