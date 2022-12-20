@@ -21,8 +21,8 @@ experiment_types <- c(
   "walk" = file.path("data", "walk"),
   "ap" = file.path("data", "ap")
 )
-#experiment <- args[1]
-path<-args[1]
+experiment <- args[1]
+path<-args[2]
 mstats_quant <- readRDS(file.path(path, 'step3_protein_abundance_woHist.rds'))
 geneOfInterest <- unlist(lapply(c("ACTL6A", "ACTR6", "ANAPC1", "ANAPC2", "anapc4", 
                                   "anapc5", "bard1", "baz1b", "cdc16","cdc23", "cdc27", "dek", 
@@ -38,11 +38,12 @@ prot.mstats <- mstats_quant$ProteinLevelData %>%
   pivot_wider(names_from=c("Channel", "Mixture"), values_from="Abundance", names_sep="_", names_sort = T)
 design <- read.csv(file.path(path, 'experiment.csv'))
 design <- design %>% dplyr::filter(!str_detect(BioReplicate, "Norm"))
-prot.mstats <- prot.mstats %>%
-  filter(present_mixture >= 2)
+
 
 # log2 intensities -----------------------------------------------------------
 if (experiment == "grouping_all"){
+  prot.mstats <- prot.mstats %>%
+    filter(present_mixture >= 2)
   prot.mstats.fc <- matrix(,nrow=dim(prot.mstats)[1],ncol=0)
   wt_list <- list()
   inten.order <- c()
@@ -59,7 +60,22 @@ if (experiment == "grouping_all"){
       }
     }
   }
-} else if(experiment == ""){
+} else{
+  prot.mstats.fc <- matrix(,nrow=dim(prot.mstats)[1],ncol=0)
+  wt_list <- list()
+  inten.order <- c()
+  wt <- paste('channel.', 14:(14+2), '_', 1, sep='')
+  wt_med <- rowMedians(base::as.matrix(prot.mstats[, wt]), na.rm = T)
+  wt_list[[1]] <- wt_med
+  #for (sample in seq(2,13,3)){
+  mix <- 1
+  for (sample in sequence(4,2,3)){
+    inten.order <- append(inten.order, c(paste('channel.', sample:(sample+2), '_', mix, sep='')))
+    grouping <- c(paste('channel.', sample:(sample+2), '_', mix, sep=''))
+    for (i in 1:3){
+      prot.mstats.fc<-cbind(prot.mstats.fc, wt_med)
+    }
+  }
   
 }
 #prot.mstats.fc <- matrix(,nrow=dim(prot.mstats)[1],ncol=0)
@@ -200,20 +216,24 @@ label
 
 label <- as.list(label)
 col_fun <- colorRamp2(seq(-5, 5, length=256), rev(colorRampPalette(brewer.pal(10, "RdBu"))(256)))
-ha <- HeatmapAnnotation(mutants= c(label[[1]]), show_annotation_name = F, 
+if (experiment == "grouping_all"){
+ha <- HeatmapAnnotation(mutants= c(label[[1]]), show_annotation_name = F,
                         col=list(mutants = c("AP"="#ff0000","Q24A"='#808080',
                                              "E56A"='#0000ff',"E56Q"='#00ffff',
                                              "E61A"='#ff5dff',	"E64A"="#ffff00",	"N68A"="#b7b7ff",	"D72A"="#ffbf00",
                                              "N89A"="#bcffbc",	"D90A"="#00bfff",	"E91A"="#ab7942",
                                              "E92A"="#00ac00",	"E92K"="#00ff00",
                                              "Q47A"="#bcbc00",	"E113A"="#aa00ff",	"E113Q"="#ffb7e7") ))
-#har <- rowAnnotation(gene.name = anno_mark(at = prot.names3.pos, labels = prot.names4, labels_gp = gpar(fontsize = 5)))
+} else{
+  ha <- HeatmapAnnotation(mutants= c(label[[1]]), show_annotation_name = F)
+}
+har <- rowAnnotation(gene.name = anno_mark(at = prot.names3.pos, labels = prot.names4, labels_gp = gpar(fontsize = 5)))
 hm <- Heatmap(prot.log2.fc, height = unit(30, "cm"),
               row_names_gp = gpar(fontsize = 3),
               #right_annotation = har,
               name='log2(mutant/wt)', cluster_columns = F, cluster_rows = hclust(gower_cluster),
               col=col_fun,
-              top_annotation = ha, show_column_names = F, na_col = "darkgrey",
+              top_annotation, show_column_names = F, na_col = "darkgrey",
               show_row_names = T,
               heatmap_legend_param = list(direction = "horizontal"),
               row_dend_reorder = T, row_split= 4, column_title = sprintf("%s proteins", nrow(prot.log2.fc)))

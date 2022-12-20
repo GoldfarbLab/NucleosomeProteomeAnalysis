@@ -6,7 +6,21 @@ library(tidyverse)
 library(UpSetR)
 library(ComplexHeatmap)
 library(conclust)
-path<-"C:/Users/anh.h.nguyen/Documents/nucleosome/raw/rts/grouping1_firstAttempt/out/"
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)==0) {
+  stop("Specify which experiment to plot and output directory", call.=FALSE)
+}
+
+experiment_types <- c(
+  "grouping_all" = file.path("data", "grouping1_firstAttempt"),
+  "v1" = file.path("data", "v1"),
+  "walk" = file.path("data", "walk"),
+  "ap" = file.path("data", "ap")
+)
+experiment <- args[1]
+path<-args[2]
+experiment <- "v1"
+#path <- "out"
 prot.mstats <- readRDS(file.path(path, 'step3_protein_abundance_woHist.rds'))
 #prot.mstats$ProteinLevelData <- prot.mstats$temp2 #no histone
 
@@ -21,7 +35,7 @@ geneOfInterest <- unlist(lapply(c("ACTL6A", "ACTR6", "ANAPC1", "ANAPC2", "anapc4
                                   "trip12", "vps72", "vrk1", "wdr76", "yeats2", "yeats4", "zzz3"), toupper))
 no_norms = levels(prot.mstats$ProteinLevelData$Condition)[levels(prot.mstats$ProteinLevelData$Condition) != "Norm"]
 compare_matrix <- cbind(1 * diag(length(no_norms)-1), rep(-1, length(no_norms)-1))
-rownames(compare_matrix) <- str_c(no_norms[1:16], "-WT")
+rownames(compare_matrix) <- str_c(no_norms[1:length(no_norms)-1], "-WT")
 colnames(compare_matrix) <- no_norms[no_norms != "Norm"]
 
 test.maxquant.pairwise <- groupComparisonTMT(
@@ -81,7 +95,11 @@ write.csv(change, file = file.path(path,'step4_fc_woHist.csv'), quote = F, row.n
 
 #export xcel
 condition <- unique(read.csv(file.path(path, 'experiment.csv'))$Condition)
-condition <- rep(append(condition[2:5], condition[7:18]), each = 3)
+if (experiment == "grouping_all"){
+  condition <- rep(append(condition[2:5], condition[7:18]), each = 3)
+} else{
+  condition <- rep(condition[c(-1, -6)], each = 3)
+}
 tag <- rep(c("pvalue_", "adj.pvalue_", "log2FC_"), times = 16)
 condition <- paste(tag, condition,sep="")
 
@@ -114,22 +132,28 @@ ggplot(mix_set, aes(fill=binding, x=Label)) +
   scale_fill_manual(values = c(unchanged="white", 
                                increased="darkgrey",
                       decreased="black") )+
-  theme_clean() +
+  ggthemes::theme_clean() +
   labs(y = "number of proteins", x = "mutant")
 dev.off()
 
 mix_set_2 <- mix_set %>% 
   group_by(binding, Label) %>% 
-  summarize(count = n())
+  mutate(count = n())
 
 write.csv(mix_set_2, file.path(path,"stats_barplot.csv"), row.names = F, quote = F, na= "")
 
-
+if (experiment == "grouping_all"){
+  full_plate <- mix_set %>% 
+    select(Protein, Label) %>%
+    group_by(Protein) %>%
+    mutate(count = n_distinct(Label)) %>%
+    filter(count == 16)
+}
 full_plate <- mix_set %>% 
   select(Protein, Label) %>%
   group_by(Protein) %>%
-  dplyr::summarise(count = n_distinct(Label)) %>%
-  filter(count == 16)
+  mutate(count = n_distinct(Label)) %>%
+  filter(count == 4)
 full_set <- mix_set %>%
   filter(Protein %in% full_plate$Protein)
 
