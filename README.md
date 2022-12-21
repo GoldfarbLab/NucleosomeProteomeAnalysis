@@ -1,5 +1,8 @@
 # NucleosomeProteomeAnalysis
 
+## To install dependencies, 
+#### run `installation.R` in RStudio
+
 ## Step 1: run `preproccess.R` with 
 ```
 RScript preprocess.R [experiments options: grouping_all | v1 | walk | ap] [/path/to/output/dir]
