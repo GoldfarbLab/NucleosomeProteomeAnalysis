@@ -6,6 +6,7 @@ library(tidyverse)
 library(UpSetR)
 library(ComplexHeatmap)
 library(conclust)
+
 args = commandArgs(trailingOnly=TRUE)
 if (length(args)==0) {
   stop("Specify which experiment to plot and output directory", call.=FALSE)
@@ -19,7 +20,6 @@ experiment_types <- c(
 )
 experiment <- args[1]
 path<-args[2]
-experiment <- "v1"
 #path <- "out"
 prot.mstats <- readRDS(file.path(path, 'step3_protein_abundance_woHist.rds'))
 #prot.mstats$ProteinLevelData <- prot.mstats$temp2 #no histone
@@ -148,12 +148,13 @@ if (experiment == "grouping_all"){
     group_by(Protein) %>%
     mutate(count = n_distinct(Label)) %>%
     filter(count == 16)
+} else {
+  full_plate <- mix_set %>% 
+    select(Protein, Label) %>%
+    group_by(Protein) %>%
+    mutate(count = n_distinct(Label)) %>%
+    filter(count == 4)
 }
-full_plate <- mix_set %>% 
-  select(Protein, Label) %>%
-  group_by(Protein) %>%
-  mutate(count = n_distinct(Label)) %>%
-  filter(count == 4)
 full_set <- mix_set %>%
   filter(Protein %in% full_plate$Protein)
 

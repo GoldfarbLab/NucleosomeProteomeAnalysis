@@ -96,7 +96,7 @@ get_accession <- function(string) {
   }
   return(paste(y, collapse=";"))
 }
-prot.mstats$temp2$GeneName <- lapply(unlist(prot.mstats$temp2[,'Protein']), get_accession)
+prot.mstats_gene$temp2$GeneName <- lapply(unlist(prot.mstats_gene$temp2[,'Protein']), get_accession)
 saveRDS(prot.mstats_gene, file = file.path(path,'step3_protein_abundance_woHist.rds'))
 
 

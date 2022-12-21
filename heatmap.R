@@ -246,60 +246,60 @@ dev.off()
 #000000	#ff0000	#808080	#0000ff	#00ffff	#ff5dff	#ffff00	#b7b7ff	
 #ffbf00	#bcffbc	#00bfff	#ab7942	#00ac00	#00ff00	#bcbc00	#aa00ff	#ffb7e7
 
-
-compare_excel_final <- readRDS(file.path(path,"step4_compare_woHist.rds"))$filtered
-compare_excel_final <- compare_excel_final %>% select("Protein", "Label", "pvalue", "log2FC","adj.pvalue", "log2FC") %>% 
-  pivot_wider(names_from=c("Label"), values_from=c("pvalue", "log2FC", "adj.pvalue"), names_sep="_", names_sort = T, values_fn = unique)
-
-#heatmap
-p_val_anova <- compare_excel_final[grep("^pvalue_|Protein", names(compare_excel_final))]
-AnovaPVal <- manova(cbind(`pvalue_AP-WT`,`pvalue_Q24A-WT`,`pvalue_E56A-WT`,`pvalue_E56Q-WT`,
-                          `pvalue_E61A-WT`,`pvalue_E64A-WT`,`pvalue_N68A-WT`,`pvalue_D72A-WT`,
-                          `pvalue_N89A-WT`,`pvalue_D90A-WT`,`pvalue_E91A-WT`,`pvalue_Q47A-WT`,
-                          `pvalue_E92A-WT`, `pvalue_E92K-WT`, `pvalue_E113A-WT`,`pvalue_E113Q-WT`) ~ Protein, 
-                    data = p_val_anova)
-cols <- data.frame(GeneName = rownames(prot.log2.fc))
-
-
-anova_p_genes <- AnovaPVal$model %>% dplyr::rename(GeneName = Protein)
-stats_pval <- merge(cols, anova_p_genes, by =c("GeneName"), all = T)
-stats_pval <- stats_pval %>%
-  dplyr::mutate(MultipleGenes = str_detect(GeneName, ";")) %>%
-  arrange(MultipleGenes, GeneName) %>%
-  select(-MultipleGenes)
-write.csv(stats_pval, file.path(path,"xcel_step5_pval.csv"), row.names = F, quote = F, na= "")
-
-#write.csv(pval_excel_final, file.path(path,"step5_pval.csv"), row.names = F, quote = F, na="")
-
-q_val_anova <- compare_excel_final[grep("^adj.pvalue_|Protein", names(compare_excel_final))]
-AnovaPVal2 <- manova(cbind(`adj.pvalue_AP-WT`,`adj.pvalue_Q24A-WT`,`adj.pvalue_E56A-WT`,`adj.pvalue_E56Q-WT`,
-                           `adj.pvalue_E61A-WT`,`adj.pvalue_E64A-WT`,`adj.pvalue_N68A-WT`,`adj.pvalue_D72A-WT`,
-                           `adj.pvalue_N89A-WT`,`adj.pvalue_D90A-WT`,`adj.pvalue_E91A-WT`,`adj.pvalue_Q47A-WT`,
-                           `adj.pvalue_E92A-WT`, `adj.pvalue_E92K-WT`, `adj.pvalue_E113A-WT`,`adj.pvalue_E113Q-WT`) ~ Protein, 
-                     data = q_val_anova)
-anova_p_genes <- AnovaPVal2$model %>% dplyr::rename(GeneName = Protein)
-stats_qval <- merge(cols, anova_p_genes, by =c("GeneName"), all = T)
-stats_qval <- stats_qval %>%
-  dplyr::mutate(MultipleGenes = str_detect(GeneName, ";")) %>%
-  arrange(MultipleGenes, GeneName) %>%
-  select(-MultipleGenes)
-write.csv(stats_qval, file.path(path,"xcel_step5_qval.csv"), row.names = F, quote = F, na= "")
-
-
-fc_anova <- compare_excel_final[grep("^log2FC_|Protein", names(compare_excel_final))]
-AnovaFC2 <- manova(cbind(`log2FC_AP-WT`,`log2FC_Q24A-WT`,`log2FC_E56A-WT`,`log2FC_E56Q-WT`,
-                           `log2FC_E61A-WT`,`log2FC_E64A-WT`,`log2FC_N68A-WT`,`log2FC_D72A-WT`,
-                           `log2FC_N89A-WT`,`log2FC_D90A-WT`,`log2FC_E91A-WT`,`log2FC_Q47A-WT`,
-                           `log2FC_E92A-WT`, `log2FC_E92K-WT`, `log2FC_E113A-WT`,`log2FC_E113Q-WT`) ~ Protein, 
-                     data = fc_anova)
-anova_p_genes <- AnovaFC2$model %>% dplyr::rename(GeneName = Protein)
-stats_fc <- merge(cols, anova_p_genes, by =c("GeneName"), all = T)
-stats_fc <- stats_fc %>%
-  dplyr::mutate(MultipleGenes = str_detect(GeneName, ";")) %>%
-  arrange(MultipleGenes, GeneName) %>%
-  select(-MultipleGenes)
-write.csv(stats_fc, file.path(path,"xcel_step5_fc.csv"), row.names = F, quote = F, na= "")
-
+if (experiment == "grouping_all"){
+  compare_excel_final <- readRDS(file.path(path,"step4_compare_woHist.rds"))$filtered
+  compare_excel_final <- compare_excel_final %>% select("Protein", "Label", "pvalue", "log2FC","adj.pvalue", "log2FC") %>% 
+    pivot_wider(names_from=c("Label"), values_from=c("pvalue", "log2FC", "adj.pvalue"), names_sep="_", names_sort = T, values_fn = unique)
+  
+  #heatmap
+  p_val_anova <- compare_excel_final[grep("^pvalue_|Protein", names(compare_excel_final))]
+  AnovaPVal <- manova(cbind(`pvalue_AP-WT`,`pvalue_Q24A-WT`,`pvalue_E56A-WT`,`pvalue_E56Q-WT`,
+                            `pvalue_E61A-WT`,`pvalue_E64A-WT`,`pvalue_N68A-WT`,`pvalue_D72A-WT`,
+                            `pvalue_N89A-WT`,`pvalue_D90A-WT`,`pvalue_E91A-WT`,`pvalue_Q47A-WT`,
+                            `pvalue_E92A-WT`, `pvalue_E92K-WT`, `pvalue_E113A-WT`,`pvalue_E113Q-WT`) ~ Protein, 
+                      data = p_val_anova)
+  cols <- data.frame(GeneName = rownames(prot.log2.fc))
+  
+  
+  anova_p_genes <- AnovaPVal$model %>% dplyr::rename(GeneName = Protein)
+  stats_pval <- merge(cols, anova_p_genes, by =c("GeneName"), all = T)
+  stats_pval <- stats_pval %>%
+    dplyr::mutate(MultipleGenes = str_detect(GeneName, ";")) %>%
+    arrange(MultipleGenes, GeneName) %>%
+    select(-MultipleGenes)
+  write.csv(stats_pval, file.path(path,"xcel_step5_pval.csv"), row.names = F, quote = F, na= "")
+  
+  #write.csv(pval_excel_final, file.path(path,"step5_pval.csv"), row.names = F, quote = F, na="")
+  
+  q_val_anova <- compare_excel_final[grep("^adj.pvalue_|Protein", names(compare_excel_final))]
+  AnovaPVal2 <- manova(cbind(`adj.pvalue_AP-WT`,`adj.pvalue_Q24A-WT`,`adj.pvalue_E56A-WT`,`adj.pvalue_E56Q-WT`,
+                             `adj.pvalue_E61A-WT`,`adj.pvalue_E64A-WT`,`adj.pvalue_N68A-WT`,`adj.pvalue_D72A-WT`,
+                             `adj.pvalue_N89A-WT`,`adj.pvalue_D90A-WT`,`adj.pvalue_E91A-WT`,`adj.pvalue_Q47A-WT`,
+                             `adj.pvalue_E92A-WT`, `adj.pvalue_E92K-WT`, `adj.pvalue_E113A-WT`,`adj.pvalue_E113Q-WT`) ~ Protein, 
+                       data = q_val_anova)
+  anova_p_genes <- AnovaPVal2$model %>% dplyr::rename(GeneName = Protein)
+  stats_qval <- merge(cols, anova_p_genes, by =c("GeneName"), all = T)
+  stats_qval <- stats_qval %>%
+    dplyr::mutate(MultipleGenes = str_detect(GeneName, ";")) %>%
+    arrange(MultipleGenes, GeneName) %>%
+    select(-MultipleGenes)
+  write.csv(stats_qval, file.path(path,"xcel_step5_qval.csv"), row.names = F, quote = F, na= "")
+  
+  
+  fc_anova <- compare_excel_final[grep("^log2FC_|Protein", names(compare_excel_final))]
+  AnovaFC2 <- manova(cbind(`log2FC_AP-WT`,`log2FC_Q24A-WT`,`log2FC_E56A-WT`,`log2FC_E56Q-WT`,
+                             `log2FC_E61A-WT`,`log2FC_E64A-WT`,`log2FC_N68A-WT`,`log2FC_D72A-WT`,
+                             `log2FC_N89A-WT`,`log2FC_D90A-WT`,`log2FC_E91A-WT`,`log2FC_Q47A-WT`,
+                             `log2FC_E92A-WT`, `log2FC_E92K-WT`, `log2FC_E113A-WT`,`log2FC_E113Q-WT`) ~ Protein, 
+                       data = fc_anova)
+  anova_p_genes <- AnovaFC2$model %>% dplyr::rename(GeneName = Protein)
+  stats_fc <- merge(cols, anova_p_genes, by =c("GeneName"), all = T)
+  stats_fc <- stats_fc %>%
+    dplyr::mutate(MultipleGenes = str_detect(GeneName, ";")) %>%
+    arrange(MultipleGenes, GeneName) %>%
+    select(-MultipleGenes)
+  write.csv(stats_fc, file.path(path,"xcel_step5_fc.csv"), row.names = F, quote = F, na= "")
+}
 
 #anova for q val
 
