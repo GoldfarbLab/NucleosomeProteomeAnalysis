@@ -86,7 +86,17 @@ prot.mstats_gene <- proteinSummarization(fn_genes,
                                          reference_norm=T, remove_norm_channel=T,
                                          MBimpute = T, verbose = TRUE)
 
-#prot.mstats$temp2$GeneName <- lapply(unlist(prot.mstats$temp2[,'Protein']), get_genes)
+get_accession <- function(string) {
+  y <- NULL
+  for (i in str_split(string[[1]][1], ";")[[1]]){
+    if (grepl("|",i, fixed = T)){
+      y<-c(y, strsplit(i, "|", fixed = T)[[1]][2])}
+    #else{
+    #y=c(y,i)}
+  }
+  return(paste(y, collapse=";"))
+}
+prot.mstats$temp2$GeneName <- lapply(unlist(prot.mstats$temp2[,'Protein']), get_accession)
 saveRDS(prot.mstats_gene, file = file.path(path,'step3_protein_abundance_woHist.rds'))
 
 
